@@ -2,14 +2,20 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>SDFTest</AssemblyName>
+    <RootNamespace>SDFTest</RootNamespace>
+    <PackageId>SDFTest.MonoGame</PackageId>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>$(DefineConstants);MONOGAME</DefineConstants>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <OutputPath>bin\MonoGame\$(Configuration)</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.4" />
     <PackageReference Include="StbRectPackSharp" Version="1.0.4" />
     <PackageReference Include="StbTrueTypeSharp" Version="1.26.12" />
+    <PackageReference Include="XNAssets.MonoGame" Version="0.7.7" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,4 +24,7 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Effects\MonoGameOGL\bin\*.*" />
+  </ItemGroup>
 </Project>

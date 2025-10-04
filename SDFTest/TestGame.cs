@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SDFTest.MonoGame;
 using StbRectPackSharp;
 using System.Collections.Generic;
 using System.IO;
@@ -80,13 +81,13 @@ namespace SDFTest
 			};
 
 			var pack = _packer.PackRect(width + 2 * GlyphPad, height + 2 * GlyphPad, null);
-			
+
 			glyph.TextureOffset = new Point(pack.X + GlyphPad, pack.Y + GlyphPad);
 			glyph.Size = new Point(width, height);
 
 			// Convert to color
 			var colorBuffer = new Color[width * height];
-			for(var i = 0; i < colorBuffer.Length; ++i)
+			for (var i = 0; i < colorBuffer.Length; ++i)
 			{
 				// Premultiply alpha
 				var b = buffer[i];
@@ -95,7 +96,7 @@ namespace SDFTest
 
 			// Load to texture
 			var bounds = glyph.TextureRectangle;
-			_atlas.SetData(0, bounds,colorBuffer, 0, bounds.Width * bounds.Height);
+			_atlas.SetData(0, bounds, colorBuffer, 0, bounds.Width * bounds.Height);
 
 			_letters[c] = glyph;
 
@@ -109,10 +110,36 @@ namespace SDFTest
 				return;
 			}
 
-			for(var i = 0; i < text.Length; ++i)
+			var effect = Resources.GetEffect(GraphicsDevice, superSamling: true);
+
+/*			effect.Parameters["cShadowColor"].SetValue(new Vector4(1, 0, 0, 1));
+			effect.Parameters["cShadowOffset"].SetValue(new Vector2(5, 5));*/
+
+			var vp = GraphicsDevice.Viewport;
+
+			_spriteBatch.Begin(effect: effect, blendState: BlendState.AlphaBlend);
+			for (var i = 0; i < text.Length; ++i)
 			{
 				var glyph = GetGlyph(text[i]);
+				if (glyph == null)
+				{
+					continue;
+				}
+
+				_spriteBatch.Draw(_atlas,
+					new Vector2((int)position.X + glyph.RenderOffset.X * 2, (int)position.Y + glyph.RenderOffset.Y * 2),
+					glyph.TextureRectangle,
+					Color.White,
+					0f,
+					Vector2.Zero,
+					scale: new Vector2(2, 2),
+					SpriteEffects.None,
+					0);
+
+				position.X += glyph.XAdvance * 2;
 			}
+
+			_spriteBatch.End();
 		}
 
 		protected override void Draw(GameTime gameTime)
