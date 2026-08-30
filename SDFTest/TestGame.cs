@@ -1,7 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using SDFTest.MonoGame;
 using StbRectPackSharp;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -18,6 +20,9 @@ namespace SDFTest
 		private Texture2D _atlas;
 		private readonly Dictionary<char, FontGlyph> _letters = new Dictionary<char, FontGlyph>();
 		private SpriteBatch _spriteBatch;
+		private bool _animatedScaling = false;
+
+		private float Scale { get; set; }
 
 		public TestGame()
 		{
@@ -45,6 +50,20 @@ namespace SDFTest
 			_atlas = new Texture2D(GraphicsDevice, 1024, 1024);
 			_packer = new Packer(_atlas.Width, _atlas.Height);
 			_spriteBatch = new SpriteBatch(GraphicsDevice);
+		}
+
+		protected override void Update(GameTime gameTime)
+		{
+			base.Update(gameTime);
+
+			KeyboardUtils.Begin();
+
+			if (KeyboardUtils.IsPressed(Keys.LeftShift))
+			{
+				_animatedScaling = !_animatedScaling;
+			}
+
+			KeyboardUtils.End();
 		}
 
 		private FontGlyph GetGlyph(char c)
@@ -110,14 +129,16 @@ namespace SDFTest
 				return;
 			}
 
-			var effect = Resources.GetEffect(GraphicsDevice, superSamling: true);
+			var effect = Resources.GetEffect(GraphicsDevice, effectType: EffectType.Shadow, superSamling: true);
 
-/*			effect.Parameters["cShadowColor"].SetValue(new Vector4(1, 0, 0, 1));
-			effect.Parameters["cShadowOffset"].SetValue(new Vector2(5, 5));*/
+			effect.Parameters["cShadowColor"].SetValue(new Vector4(0, 0, 0, 1));
+			effect.Parameters["cShadowOffset"].SetValue(new Vector2(5, 5));
+
+			// effect.Parameters["cStrokeColor"].SetValue(new Vector4(1, 0, 0, 1));
 
 			var vp = GraphicsDevice.Viewport;
 
-			_spriteBatch.Begin(effect: effect, blendState: BlendState.AlphaBlend);
+			_spriteBatch.Begin(effect: effect, blendState: BlendState.NonPremultiplied);
 			for (var i = 0; i < text.Length; ++i)
 			{
 				var glyph = GetGlyph(text[i]);
@@ -127,16 +148,16 @@ namespace SDFTest
 				}
 
 				_spriteBatch.Draw(_atlas,
-					new Vector2((int)position.X + glyph.RenderOffset.X * 2, (int)position.Y + glyph.RenderOffset.Y * 2),
+					new Vector2((int)position.X + glyph.RenderOffset.X * Scale, (int)position.Y + glyph.RenderOffset.Y * Scale),
 					glyph.TextureRectangle,
 					Color.White,
 					0f,
 					Vector2.Zero,
-					scale: new Vector2(2, 2),
+					scale: new Vector2(Scale),
 					SpriteEffects.None,
 					0);
 
-				position.X += glyph.XAdvance * 2;
+				position.X += glyph.XAdvance * Scale;
 			}
 
 			_spriteBatch.End();
@@ -144,10 +165,14 @@ namespace SDFTest
 
 		protected override void Draw(GameTime gameTime)
 		{
-			GraphicsDevice.Clear(Color.Black);
+			GraphicsDevice.Clear(Color.CornflowerBlue);
 
 			// TODO: Add your drawing code here
-			DrawString("Hello, World!", new Vector2(50, 100), Color.White);
+			Scale = _animatedScaling
+				? 3 + 2f * (float)Math.Sin(gameTime.TotalGameTime.TotalSeconds * .5f)
+				: 1.0f;
+
+			DrawString("Hello, World!", new Vector2(100, 200), Color.White);
 
 			_spriteBatch.Begin();
 

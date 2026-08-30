@@ -65,7 +65,7 @@ void PS(float2 iTexCoord : TEXCOORD0,
 			alpha = alpha * 0.25;
 		#endif
 
-		oColor = float4(alpha, alpha, alpha, alpha);
+		oColor.a = alpha;
 	}
 }
 
